@@ -1,0 +1,219 @@
+<html>
+<!--
+  RPAN Show History Wizard v1.0
+  Copyright(c) 2022, Leslie E. Krause
+
+  Licensed under The MIT License.
+  https://opensource.org/licenses/MIT
+-->
+<head>
+<script>
+var cur_step = 0;
+var username;
+var subreddit;
+
+function Spoiler( id, is_visible, callbacks )
+{
+	let elem = document.getElementById( id );
+	let tmpl = elem.innerHTML;
+
+	this.onEnter = callbacks.onEnter;
+	this.onLeave = callbacks.onLeave;
+
+	this.hide = function ( can_notify )
+	{
+		elem.style.display = 'none';
+	}
+
+	this.show = function ( )
+	{
+		elem.style.display = 'block';
+	}
+
+	this.format = function ( )
+	{
+		let regex = /%([-0])?([0-9]+)?(\.[0-9]+)?([sdf%])/g;
+		let args = arguments;
+		let idx = 0;
+
+		elem.innerHTML = tmpl.replace( regex, function ( exp, p0, p1, p2, p3 )
+		{
+			if( exp == '%%' )
+				return '%';
+			else if( idx >= args.length )
+				return 'undefined';
+
+			let type = p3;
+			let prec = p2 != undefined ? parseInt( p2.substr( 1 ) ) : 6;
+			let size = p1 != undefined ? parseInt( p1 ) : 0;
+			let fill = p0 == '0' && type != 's' ? '0' : ' ';
+			let is_sign = type != 's' && args[ idx ] < 0;
+			let is_left = p0 == '-';
+
+			let str;
+			switch( type ) {
+				case 's':
+					str = args[ idx ];
+					break;
+				case 'd':
+					str = parseFloat( args[ idx ] ).toFixed( 0 );
+					break;
+				case 'f':
+					str = parseFloat( args[ idx ] ).toFixed( prec );
+					break;
+			}
+			while( str.length < size ) {
+				str = is_left ? str + ' ' : fill + str;
+				if( fill == '0' && !is_left && is_sign )
+					str = '-0' + str.substr( 2 );  // fun corner case!
+			}
+
+			idx++;
+
+			return str;
+		} )
+	}
+
+	if( !is_visible ) {
+		this.hide( );
+	}
+
+	return this;
+}
+
+function abortNavigation( )
+{
+	alert( 'Right-click link to save the page.' );
+}
+
+function nextStep( )
+{
+	if( cur_step < steps.length - 1 )
+	{
+		if( steps[ cur_step ].onLeave( ) )
+		{
+			steps[ cur_step ].hide( );
+			cur_step++;
+			steps[ cur_step ].onEnter( );
+			steps[ cur_step ].show( );
+			updateButtons( );
+		}
+	}
+}
+
+function prevStep( )
+{
+	if( cur_step > 0 )
+	{
+		steps[ cur_step ].hide( false );
+		cur_step--;
+		steps[ cur_step ].onEnter( );
+		steps[ cur_step ].show( );
+		updateButtons( );
+	}
+}
+
+function updateButtons( )
+{
+	document.getElementById( 'prev_button' ).disabled = ( cur_step == 0 );
+	document.getElementById( 'next_button' ).disabled = ( cur_step == steps.length - 1 );
+}
+</script>
+<title>RPAN Show History Wizard</title>
+</head>
+
+<body><center>
+<h1>RPAN Show History Wizard</h1>
+
+<table border="1" width="80%" cellpadding="10" cellspacing="0">
+<tr><td align="center" height="400">
+<form name="wizard">
+
+<div id="step1">
+	<p><b>Step 1.</b> Enter your Reddit username: <br>
+	<input type="text" name="username"></p>
+</div>
+
+<div id="step2">
+	<p><b>Step 2.</b> Select the RPAN subreddit: <br>
+	<select name="subreddit">
+	<option>r/AnimalsOnReddit</option>
+	<option>r/distantsocializing</option>
+	<option>r/GlamourSchool</option>
+	<option>r/HeadlineWorthy</option>
+	<option>r/readwithme</option>
+	<option>r/RedditInTheKitchen</option>
+	<option>r/RedditMasterClasses</option>
+	<option>r/RedditSessions</option>
+	<option>r/RedditSets</option>
+	<option>r/redditsweats</option>
+	<option>r/shortcircuit</option>
+	<option>r/talentShow</option>
+	<option>r/TheArtistStudio</option>
+	<option>r/TheGamerLounge</option>
+	<option>r/TheYouShow</option>
+	<option>r/whereintheworld</option>
+	</select></p>
+</div>
+
+<div id="step3">
+	<p><b>Step 3.</b> Save the page below as "results.html".<br>
+	<a href="https://old.reddit.com/%s/search?q=author%3A%s&restrict_sr=on&sort=new&limit=500" target="_blank" onClick="abortNavigation( ); return false;">https://old.reddit.com/%s/search?q=author%3A%s&restrict_sr=on&sort=new&limit=500</a><br>
+</div>
+
+<div id="step4">
+	<p><b>Step 4.</b> Use the RPAN Show History tool to export the results:<br>
+	<a href="https://github.com/sorcerykid/rpan_show_history" target="_blank">https://github.com/sorcerykid/rpan_show_history</a></p>
+</div>
+
+</form>
+</td><tr>
+<tr><td align="center">
+	<input id="prev_button" type="button" value="Back" onClick="prevStep( );"></input>
+	<input id="next_button" type="button" value="Next" onClick="nextStep( );"></input>
+</td></tr>
+
+</table>
+
+<script>
+var steps = [
+	new Spoiler( 'step1', true, {
+		onEnter: function ( ) { },
+		onLeave: function ( ) {
+			let value = document.wizard.username.value.trim( );
+			if( !new RegExp( /^[a-zA-Z0-9_-]+$/ ).test( value ) ) {
+				alert( 'Invalid username' );
+				return false;
+			}
+			username = value;
+			return true;
+		},
+	} ),
+	new Spoiler( 'step2', false, {
+		onEnter: function ( ) { },
+		onLeave: function ( ) {
+			let value = document.wizard.subreddit.value;
+			subreddit = value;
+			return true;
+		},
+	} ),
+	new Spoiler( 'step3', false, {
+		onEnter: function ( ) {
+			this.format( subreddit, username, subreddit, username )
+		},
+		onLeave: function ( ) {
+			return true;
+		},
+	} ),
+	new Spoiler( 'step4', false, {
+		onEnter: function ( ) { },
+		onLeave: function ( ) {	},
+	} ),
+
+];
+
+updateButtons( );
+</script>
+
+</center></body>
+</html>
