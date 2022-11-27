@@ -30,7 +30,7 @@ for str in string.gmatch( data, '<div class=" search%-result (.-)</div></div></d
 	local post_title = _C[ 1 ]
 	assert( is_match( str, 'datetime="(.-)%+00:00"' ) )
 	local post_created = _C[ 1 ] .. "Z"
-	assert( is_match( str, 'class="search%-score">(.-) points</span>' ) )
+	assert( is_match( str, 'class="search%-score">(.-) points?</span>' ) )
 	local post_points = _C[ 1 ]
 
 	print( string.format( '%s\t%s\t%s\t%s',
