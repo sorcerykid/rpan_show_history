@@ -1,1 +1,1 @@
-bin\parse_results.exe > history.txt
+bin\parse_results.exe results#.html > history.txt

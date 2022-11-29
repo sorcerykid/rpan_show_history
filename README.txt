@@ -10,6 +10,7 @@ The package consists of the following files:
   |- README.txt
   |- LICENSE.txt
   |- show_history_wizard.html
+  |- template.lua
   |- convert.bat
   |- /bin
      |- parse_results (binary for Linux)
@@ -21,22 +22,31 @@ If you have the Lua interpreter on your system, then you can run the script dire
 the 'src' directory. Otherwise, standalone binaries for Windows and Linux are available
 under the 'bin' directory. The binaries were generated using Enceladus:
 
-   https://github.com/ToxicFrog/Enceladus
+  https://github.com/ToxicFrog/Enceladus
 
-Note: Be sure to set the execute permissions for the standalone binary.
+Note: On Linux, be sure to set the execute permissions for the standalone binary.
+
+Open 'show_history_wizard.html' in your web browser. Follow the instructions to download
+your search results. Each page of results should be saved within the project directory 
+using sequential names (e.g. "results1.html", "results2.html", etc.)
 
 To run the script directly on Linux:
 
-  % lua src/parse_results.lua > history.txt
+  % cd rpan_show_history
+  % lua src/parse_results.lua results#.html > history.txt
 
 To run the standalone binary on Linux:
 
-  % bin/parse_results > history.txt
+  % cd rpan_show_history
+  % bin/parse_results results#.html > history.txt
 
 A batch file is provided for Windows users. Navigate to the project folder in Windows 
 Explorer. Then double-click on 'convert.bat'. The show history will be saved within the 
 project folder as 'history.txt'.
 
-By default, 'results.html' is used as the source file, but an alternate filename can be
-specified as the parameter. The output consists of four tab-delimited fields: Subreddit,
-StreamID, PostDate, and PostTitle.
+The output consists of four tab-delimited fields: Subreddit, StreamID, PostDate, and 
+PostTitle. You can customize the field order, delimiter, etc. by editing 'template.lua' 
+accordingly. All records are sorted by date in descending order (newest to oldest).
+
+If you plan to use my RPAN Stream Recap tool, then be sure to copy 'history.txt' into 
+that project directory.
